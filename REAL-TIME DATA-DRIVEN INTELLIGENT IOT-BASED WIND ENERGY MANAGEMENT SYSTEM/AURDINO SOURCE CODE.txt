@@ -1,0 +1,136 @@
+SOURCE CODE
+AURDINO CODE
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+#include <Adafruit_Sensor.h>
+#include "DHT.h"
+#define DHTPIN 7 // what pin we're connected to
+#define DHTTYPE DHT11 // DHT 11
+int t;
+DHT dht(DHTPIN, DHTTYPE);
+//////////////////////////////voltage1////////////////
+float correctionfactor1 = 0;
+int analogInput1 = A5; //voltage
+float vout1 = 0.0;
+float vin1 = 0.0;
+// two resistors 30K and 7.5k ohm
+float R1_1 = 30000; //
+float R2_1 = 7500; //
+float value1 = 0.0;
+///////////////////////////////////////////////////////
+////////////////////////battery voltage///////////////////
+float correctionfactor2 = 0;
+int analogInput2 = A1;
+float vout2 = 0.0;
+float vin2 = 0.0;
+// two resistors 30K and 7.5k ohm
+float R1_2 = 30000; //
+91
+float R2_2 = 7500; //
+int value2 = 0;
+int x,y,z;
+int R;
+int Z2,Z1;
+int vin1_1;
+int s,f;
+int F;
+void setup()
+{
+dht.begin();
+/***********/
+Serial.begin(9600);
+lcd.begin (16,2);
+/***********/
+lcd.setCursor(0,0);
+lcd.print("Wind ");
+lcd.setCursor(0,1);
+lcd.print(" ");
+delay(3000);
+lcd.clear();
+/****************/
+pinMode(A1,INPUT); //volt 1
+pinMode(A5,INPUT); // voltage
+pinMode(7,INPUT);// temp
+pinMode(3,OUTPUT);//buzzer
+}
+/***********************/
+void loop()
+92
+{
+dht11();
+voltage1();
+voltage2();
+Serial.println("T");
+Serial.println(t);
+delay(200);
+Serial.println("S");
+Serial.println(s);
+delay(200);
+Serial.println("a");
+Serial.println(vin1);
+delay(200);
+Serial.println("b");
+Serial.println(vin1_1);
+delay(200);
+Serial.println("w");
+Serial.println(vin2);
+delay(200);
+}
+void voltage1()
+{
+value1 = analogRead(analogInput1);
+vout1 = (value1 * 5) / 1023.0; // see text
+vin1 = vout1 / (R2_1/(R1_1+R2_1));
+vin1 = vin1+0.7 - correctionfactor1;
+lcd.setCursor(0,0);
+lcd.print("V:");
+lcd.setCursor(2,0);
+93
+lcd.print(vin1);
+vin1_1=((vin1/12)*100);
+lcd.setCursor(8,0);
+lcd.print("BP:");
+lcd.print(vin1_1);
+lcd.print("% ");
+}
+void voltage2()
+{
+value2 = analogRead(analogInput2);
+vout2 = (value2 * 7) / 1023.0; // see text
+vin2 = vout2 / (R2_2/(R1_2+R2_2));
+vin2 = vin2 - correctionfactor2;
+lcd.setCursor(8,1);
+lcd.print("WV:");
+lcd.setCursor(11,1);
+lcd.print(vin2);
+delay(2000);
+}
+void dht11()
+{
+int h = dht.readHumidity();
+t = dht.readTemperature();
+float f = dht.readTemperature(true);
+if (isnan(h) || isnan(t) || isnan(f))
+{
+//Serial.println("Failed to read from DHT sensor!");
+return;
+}
+94
+lcd.setCursor(0,1);
+lcd.print("T:"); lcd.setCursor(2,1);
+lcd.print(t);
+if(t > 36) /////temp
+{
+lcd.setCursor(5,1);
+lcd.print("H");
+s=1;
+digitalWrite (3,HIGH);
+}
+else
+{
+lcd.setCursor(5,1);
+lcd.print("L");
+s=0;
+digitalWrite (3,LOW);
+}
+}
